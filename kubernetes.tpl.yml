@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: _APP_NAME_
+  labels:
+    app: _APP_NAME_
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: _APP_NAME_
+
+  # Pod template
+  template:
+    metadata:
+      labels:
+        app: _APP_NAME_
+    spec:
+      containers:
+        - name: test
+          image: registry.gitlab.com/michael.gerber/zip-finder:_VERSION_
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+      imagePullSecrets:
+        - name: gitlab-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: _APP_NAME_
+  labels:
+    app: _APP_NAME_
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app: _APP_NAME_
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: _APP_NAME_
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: _HOST_
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: _APP_NAME_
+              servicePort: 80
